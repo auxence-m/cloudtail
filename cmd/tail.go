@@ -162,8 +162,8 @@ func fetchAndTailLogs(options Options, projectID string) error {
 		if err != nil {
 			return fmt.Errorf("could not open output file: \n%w", err)
 		}
-		out = file
 		defer file.Close()
+		out = file
 	}
 
 	// Fetch logs
@@ -174,7 +174,7 @@ func fetchAndTailLogs(options Options, projectID string) error {
 
 	// Tail logs if --follow is set
 	if options.Follow {
-		err := stream.TailLogs(out, projectID, filterStr, options.Limit)
+		err = stream.TailLogs(out, projectID, filterStr, options.Limit)
 		if err != nil {
 			return fmt.Errorf("error tailing log entries %w", err)
 		}
