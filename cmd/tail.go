@@ -16,6 +16,7 @@ type Options struct {
 	Severity     string
 	Since        string
 	SinceTime    string
+	CustomFilter string
 	Follow       bool
 	Limit        int
 	Output       string
@@ -40,6 +41,9 @@ cloudtail tail projectID --severity=WARNING --since-time=2025-07-30T06:00:00Z
 
 # Begin streaming the logs from the "log-name" and save them in the "output.log" file
 cloudtail tail projectID --log-name=projects/projectID/logs/log-name --follow --output=output.log
+
+# List logs using a more custom or complex log filter expression
+cloudtail tail projectID --filter="severity >= "ERROR" AND resource.type = "k8s_cluster" AND timestamp >= "2023-01-01T00:00:00Z" AND timestamp <= "2023-01-31T23:59:59Z""
 `,
 	RunE: tailRun,
 }
@@ -62,6 +66,7 @@ func tailRun(cmd *cobra.Command, args []string) error {
 	options.Follow, _ = flags.GetBool("follow")
 	options.Limit, _ = flags.GetInt("limit")
 	options.Output, _ = flags.GetString("output")
+	options.CustomFilter, _ = flags.GetString("filter")
 
 	projectID := args[0]
 
@@ -88,7 +93,7 @@ func validateSeverityFlag(severity string) (string, error) {
 	return upper, nil
 }
 
-// validateSinceFlag validates a --since flag in the form of "1h", "30m", or "20s" and converts it into a time.Duration.
+// validateSinceFlag validates that the --since flag is a duartion (e.g. "1h", "30m", or "20s") and converts it into a time.Duration.
 func validateSinceFlag(since string) (time.Duration, error) {
 	parseDuration, err := time.ParseDuration(since)
 	if err != nil {
@@ -102,7 +107,7 @@ func validateSinceFlag(since string) (time.Duration, error) {
 	return parseDuration, nil
 }
 
-// validateSinceTimeFlag validates that the --since-time flag is a valid RFC3339 timestamp.
+// validateSinceTimeFlag validates that the --since-time flag is a valid RFC3339 timestamp (e.g. 2024-01-09T10:30:00Z).
 func validateSinceTimeFlag(sinceTime string) (time.Time, error) {
 	parsedTime, err := time.Parse(time.RFC3339, sinceTime)
 	if err != nil {
@@ -127,6 +132,7 @@ func fetchAndTailLogs(options Options, projectID string) error {
 	since := strings.TrimSpace(options.Since)
 	sinceTime := strings.TrimSpace(options.SinceTime)
 	output := strings.TrimSpace(options.Output)
+	customFilter := strings.TrimSpace(options.CustomFilter)
 
 	// Validate severity flag
 	if severity != "" {
@@ -165,6 +171,7 @@ func fetchAndTailLogs(options Options, projectID string) error {
 		Severity:     parseSeverity,
 		Since:        parseDuration,
 		SinceTime:    parseTime,
+		CustomFilter: customFilter,
 	}
 	filterStr := stream.BuildFilterString(&filter)
 	//fmt.Println(filterStr)
@@ -205,6 +212,7 @@ func init() {
 	tailCmd.Flags().String("severity", "", "Retrives the logs with the specified severity level. (e.g., INFO, WARNING, ERROR)")
 	tailCmd.Flags().String("since", "", "Retrieves logs newer than a specified relative duration (e.g., 1h, 30m, 20s, 1h15m30s). Only one of --since-time or --since may be used")
 	tailCmd.Flags().String("since-time", "", "Retrieves logs newer than a specific timestamp in RFC3339 format (e.g., YYYY-MM-DDTHH:MM:SSZ). Only one of --since-time or --since may be used")
+	tailCmd.Flags().String("filter", "", `Retrieves logs with the specified filter. This flag allows the use of raw filter for more customized or complex querries (e.g., severity >= "ERROR" AND severity <= "EMERGENCY" AND resource.type="gce_instance" AND timestamp >= "2025-12-18T12:00:00Z")`)
 
 	tailCmd.MarkFlagsMutuallyExclusive("since", "since-time")
 

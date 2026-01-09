@@ -15,6 +15,7 @@ type Filter struct {
 	Severity     string
 	Since        time.Duration
 	SinceTime    time.Time
+	CustomFilter string
 }
 
 func BuildFilterString(filter *Filter) string {
@@ -43,6 +44,10 @@ func BuildFilterString(filter *Filter) string {
 
 	if !filter.SinceTime.IsZero() {
 		options = append(options, fmt.Sprintf(`timestamp >= "%s"`, filter.SinceTime.Format(time.RFC3339)))
+	}
+
+	if filter.CustomFilter != "" {
+		options = append(options, fmt.Sprintf(`%s`, filter.CustomFilter))
 	}
 
 	return strings.Join(options, " AND ")
