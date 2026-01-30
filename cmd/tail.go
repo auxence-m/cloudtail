@@ -30,20 +30,64 @@ var tailCmd = &cobra.Command{
 	Short:        "Stream Google Cloud Logging entries directly into the terminal in real time",
 	Long:         `The tail command will fetch and stream all Google Cloud Logging entries from the last 24 hours by default unless specified otherwise with the available flags`,
 	Example: `
-# List logs from the "cloudbuild" log within the last hour 
-cloudtail tail projectID --log-name=projects/projectID/logs/cloudbuild --since=1h
+The following examples demonstrate common usage patterns for tail.
 
-# List the 50 most recent logs associated with the "cloud_run_revision" label
-cloudtail tail projectID --resource-type=cloud_run_revision --limit=50
+# Stream all logs in real time
+cloudtail tail projectID --follow
 
-# List all the logs with a severity of "WARNING" starting from July 31, 2025, at 06:00:00 UTC
-cloudtail tail projectID --severity=WARNING --since-time=2025-07-30T06:00:00Z
+# Stream logs from a specific resource type
+cloudtail tail projectID --resource-type=gce_instance --follow
 
-# Begin streaming the logs from the "log-name" and save them in the "output.log" file
-cloudtail tail projectID --log-name=projects/projectID/logs/log-name --follow --output=output.log
+# Stream only ERROR severity logs
+cloudtail tail projectID --severity=ERROR --follow
 
-# List logs using a more custom or complex log filter expression
-cloudtail tail projectID --filter="severity >= "ERROR" AND resource.type = "k8s_cluster" AND timestamp >= "2023-01-01T00:00:00Z" AND timestamp <= "2023-01-31T23:59:59Z""
+# Display the most recent 100 log entries
+cloudtail tail projectID --limit=100
+
+# Display logs from the last 30 minutes
+cloudtail tail projectID --since=30m
+
+# Display logs newer than a specific point in time
+cloudtail tail projectID --since-time=2026-02-12T12:30:00Z
+
+# Filter logs by log name and resource type
+cloudtail tail projectID \
+	--log-name=projects/projectID/logs/cloudbuild \
+	--resource-type=k8s_container
+
+# Combine severity and time-based filtering
+cloudtail tail projectID --severity=WARNING --since=1h
+
+# Use an advanced filter expression for complex queries
+cloudtail tail projectID \
+	--filter='severity>="ERROR" AND timestamp>="2026-01-01T00:00:00Z" AND timestamp<="2023-01-31T12:00:00Z"'
+
+# Combine advanced filtering with a result limit
+cloudtail tail projectID \
+	--filter='severity>="ERROR" AND timestamp>="2026-01-01T00:00:00Z" AND timestamp<="2023-01-31T12:00:00Z"' \
+	--limit=100
+
+# Stream logs using an advanced filter expression
+cloudtail tail projectID --filter='severity>="CRITICAL"' --follow
+
+# Write log output to a file instead of stdout
+cloudtail tail projectID --severity=INFO --output=logs.txt
+
+# Stream logs and write them to a file
+cloudtail tail projectID --follow --output=logs.txt
+
+# Combine multiple filters for a focused query
+cloudtail tail projectID \
+	--log-name=projects/projectID/logs/cloudbuild \
+	--resource-type=k8s_container \
+	--severity=ERROR \
+	--since=15m
+
+# Retrieve recent logs using a fixed timestamp and save them
+cloudtail tail projectID \
+	--since-time=2026-01-13T12:30:00Z \
+	--limit=200 \
+	--output=incident.log
 `,
 	RunE: tailRun,
 }
@@ -188,6 +232,7 @@ func fetchAndTailLogs(options Options, projectID string) error {
 			return fmt.Errorf("could not open output file: \n%w", err)
 		}
 		defer file.Close()
+
 		out = file
 	}
 
