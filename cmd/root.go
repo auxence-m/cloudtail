@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func DefaultColorScheme(c lipgloss.LightDarkFunc) fang.ColorScheme {
+func defaultColorScheme(c lipgloss.LightDarkFunc) fang.ColorScheme {
 	base := c(lipgloss.Black, lipgloss.White)
 	return fang.ColorScheme{
 		Base:           base,
@@ -46,7 +46,7 @@ func Execute() {
 	// Add charmbracelet/fang
 	// charmbracelet/fang calls root.ExecuteContext()
 	err := fang.Execute(context.Background(), rootCmd,
-		fang.WithVersion(rootCmd.Version), fang.WithoutManpage(), fang.WithNotifySignal(os.Interrupt, os.Kill), fang.WithColorSchemeFunc(DefaultColorScheme))
+		fang.WithVersion(rootCmd.Version), fang.WithoutManpage(), fang.WithNotifySignal(os.Interrupt, os.Kill), fang.WithColorSchemeFunc(defaultColorScheme))
 
 	if err != nil {
 		os.Exit(1)
