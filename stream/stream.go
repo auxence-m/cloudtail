@@ -96,6 +96,11 @@ func GetEntries(out io.Writer, projectID string, filter string, limit int) error
 		if err != nil {
 			// No more log entries
 			if errors.Is(err, iterator.Done) {
+
+				if counter == 0 {
+					fmt.Fprintln(os.Stderr, "No entries found.")
+				}
+
 				break
 			}
 

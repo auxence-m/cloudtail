@@ -124,7 +124,7 @@ func tailRun(cmd *cobra.Command, args []string) error {
 
 	projectID := args[0]
 
-	return fetchAndTailLogs(options, projectID)
+	return fetchAndTailLogs(&options, projectID)
 }
 
 // validateSeverityFlag ensures the --severity flag has a valid value
@@ -175,13 +175,17 @@ func validateSinceTimeFlag(sinceTime string) (time.Time, error) {
 	return parsedTime, nil
 }
 
-func fetchAndTailLogs(options Options, projectID string) error {
+func fetchAndTailLogs(options *Options, projectID string) error {
 	var (
 		parseDuration time.Duration
 		parseTime     time.Time
 		parseSeverity string
 		err           error
 	)
+
+	if options == nil {
+		return fmt.Errorf("options is null in the fetchAndTailLogs fonction")
+	}
 
 	// Trim options
 	logName := strings.TrimSpace(options.LogName)
@@ -247,7 +251,7 @@ func fetchAndTailLogs(options Options, projectID string) error {
 			file.Close()            // Close file before exiting the program
 		}()
 
-		fmt.Println("Using output file:", output)
+		fmt.Println("Writing to output file:", output)
 		os.Stdout = file
 	}
 

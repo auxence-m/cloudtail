@@ -37,7 +37,9 @@ var rootCmd = &cobra.Command{
 	Version: "1.0",
 	Short:   "cloudtail displays or tail logs from Google Cloud Logging",
 	Long: `cloudtail is a lightweight cloud-native command-line tool written in Golang that allows users to display or tail logs from Google Cloud Logging (similar to Kubectl logs).
+
 It connects to the Google Cloud Logging API, fetches logs for a specific project based on filters like severity, resource type, or time range. 
+
 It displays the logs or continuously streams them to the terminal or to an output file in near real-time.`,
 }
 
