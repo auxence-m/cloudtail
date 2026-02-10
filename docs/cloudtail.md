@@ -4,7 +4,7 @@ cloudtail displays or tail logs from Google Cloud Logging
 
 ### Synopsis
 
-cloudtail is a lightweight cloud-native command-line tool written in Golang that allows users to display or tail logs from Google Cloud Logging (similar to Kubectl logs).
+cloudtail is a lightweight cloud-native command-line tool written in Golang that allows users to view or tail logs from Google Cloud Logging (similar to `kubectl logs`).
 
 It connects to the Google Cloud Logging API, fetches logs for a specific project based on filters like severity, resource type, or time range. 
 
